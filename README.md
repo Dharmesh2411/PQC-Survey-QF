@@ -86,7 +86,9 @@ The privacy copy is an operational template, not legal advice. Before public lau
 `render.yaml` is a Render Blueprint that creates one Node web service (`post-quantum-readiness-survey`) and one PostgreSQL database (`quadrafort_survey`).
 
 1. Push this repository to GitHub.
-2. In the Render dashboard choose **New → Blueprint**, connect the repository and apply it. Render generates `SESSION_SECRET` and `IP_HASH_SECRET`, wires `DATABASE_URL` from the new database, and runs `npm ci && npm run setup` as the build step, so the schema is created on every deploy.
+2. In the Render dashboard choose **New → Blueprint**, connect the repository and apply it. Render generates `SESSION_SECRET` and `IP_HASH_SECRET`, wires `DATABASE_URL` from the new database, builds with `npm ci`, and runs `node db/setup.js && node server/app.js` on start, so the schema is applied on every boot.
+
+   Do not set `PGSSLMODE` for Render's internal `DATABASE_URL`: the private connection is not TLS, and forcing SSL makes both `db/setup.js` and the server fail with `The server does not support SSL connections`. Set it only when the database is reached over the public internet, where TLS is required.
 3. `NODE_ENV=production` is set, and `PUBLIC_ORIGIN` falls back to Render's `RENDER_EXTERNAL_URL`, so the `onrender.com` address works without extra configuration. To serve a custom domain, add it in Render and set `PUBLIC_ORIGIN` to that `https://` origin (same-origin checks and email links depend on it).
 4. Create the administrator after the first deploy: open a Render shell and run `npm run create-admin`.
 
