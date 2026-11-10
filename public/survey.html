@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quadrafort's Quantum Risk Readiness Survey</title>
+<meta name="description" content="Complete Quadrafort's Quantum Risk Readiness Survey.">
+<meta name="theme-color" content="#0a0a0c">
+<link rel="icon" type="image/png" href="/img/favicon.png">
+<link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="survey-shell">
+<header class="survey-header">
+<a class="brand" href="/" aria-label="Quadrafort home"><img src="/img/quadrafort-logo.png" alt="Quadrafort Technologies"></a>
+<a class="exit" href="/">Exit survey</a>
+</header>
+<main class="survey-main" id="main">
+
+<div class="survey-intro" id="survey-intro">
+<div class="eyebrow">QUANTUM READINESS · A QUADRAFORT SURVEY</div>
+<h1>Quadrafort's Quantum Risk Readiness Survey</h1>
+<p class="intro-meta" id="intro-meta">Take a 10 minute assessment to gain insights into your current PQC readiness.</p>
+<nav class="section-nav" id="section-nav" aria-label="Survey sections" hidden></nav>
+<button type="button" class="link-button" id="start-over" hidden>Start over with a blank survey</button>
+</div>
+
+<div class="progress-dock" id="progress-dock">
+<div class="progress-meta">
+<span id="step-label">Survey progress</span>
+<span id="progress-count">0 of 0 answered</span>
+</div>
+<div class="progress-track" id="progress-track" role="progressbar" aria-label="Survey progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="progress-fill" id="progress-fill"></div></div>
+</div>
+
+<form id="survey-form" novalidate>
+<p class="form-error" id="form-error" role="alert" tabindex="-1"></p>
+<div id="sections"></div>
+
+<section class="form-section consent-section" id="consent-section" aria-labelledby="consent-title">
+<p class="section-kicker">FINAL STEP · CONSENT</p>
+<h2 id="consent-title">Give your consent, then submit</h2>
+<p class="section-copy">Your responses are sent to Quadrafort when you submit the survey. Your contact details are optional.</p>
+<p class="form-error" id="consent-error" role="alert"></p>
+<div id="turnstile-container"></div>
+<label class="consent" for="consent">
+<input type="checkbox" id="consent" name="consent">
+<span>I consent to Quadrafort processing my survey responses as described in the <a href="/privacy" target="_blank" rel="noopener">survey privacy information</a> and <a href="https://www.quadrafort.com/pages/privacy-notice" target="_blank" rel="noopener">Quadrafort privacy notice</a>. Consent is your decision and not a mandatory field as per DPDP Act</span>
+</label>
+
+<h3 class="contact-title">Where should we send your results?</h3>
+<p class="section-copy">Optional. Leave any field blank if you would rather stay anonymous.</p>
+<div class="contact-grid">
+<div><label class="field-label" for="name">Name</label><input class="field" id="name" name="name" autocomplete="name" maxlength="160"></div>
+<div><label class="field-label" for="email">Work email</label><input class="field" id="email" name="email" type="email" autocomplete="email" maxlength="254"></div>
+<div><label class="field-label" for="organization">Organization</label><input class="field" id="organization" name="organization" autocomplete="organization" maxlength="200"></div>
+<div><label class="field-label" for="designation">Designation</label><input class="field" id="designation" name="designation" maxlength="160"></div>
+<div><label class="field-label" for="phone">Phone</label><input class="field" id="phone" name="phone" type="tel" autocomplete="tel" maxlength="40"></div>
+</div>
+<label class="consent report-consent" for="wants-report">
+<input type="checkbox" id="wants-report" name="wants-report">
+<span>Send me the results report by email.</span>
+</label>
+
+<div class="survey-controls">
+<a class="button secondary" href="#sections">Review my answers</a>
+<button class="button" type="submit" id="submit-button">Submit and see my assessment</button>
+</div>
+</section>
+</form>
+
+<section class="question-card assessment" id="assessment" tabindex="-1" hidden></section>
+
+</main>
+</div>
+<script src="/js/assessment.js" defer></script>
+<script src="/js/survey.js" defer></script>
+</body>
+</html>

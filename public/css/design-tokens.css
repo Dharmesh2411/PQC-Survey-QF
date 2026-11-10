@@ -1,0 +1,25 @@
+:root {
+  /* Verified from Quadrafort's current site CSS and rendered components. */
+  --qf-font-local: "Lato";
+  --qf-bg: #0a0a0c;
+  --qf-surface: #121216;
+  --qf-surface-raised: #1a1a20;
+  --qf-text: #f5f5f7;
+  --qf-muted: #a9a9b4;
+  --qf-subtle: #74747f;
+  --qf-border: #34343d;
+  --qf-accent: #d73465;
+  --qf-accent-bright: #ea396e;
+  --qf-accent-soft: #f2a0b8;
+  --qf-white: #ffffff;
+  --qf-success: #70d6a1;
+  --qf-danger: #ff8585;
+  --qf-font-body: "Lato", Arial, sans-serif;
+  --qf-font-display: "Lato", Arial, sans-serif;
+  --qf-container: 1180px;
+  --qf-radius: 16px;
+  --qf-radius-small: 8px;
+  --qf-radius-pill: 999px;
+  --qf-shadow: 0 20px 70px rgba(0, 0, 0, .28);
+  --qf-transition: 180ms ease;
+}
