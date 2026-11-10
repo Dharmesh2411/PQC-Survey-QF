@@ -114,9 +114,12 @@ async function track(req, event) {
   await new Promise((resolve, reject) => req.session.save((error) => error ? reject(error) : resolve()));
 }
 
+// Liveness only: the process is up. Render routes traffic on this, so a database
+// outage shows an error in the app instead of leaving the instance unrouted.
+app.get('/livez', (_req, res) => res.json({ status: 'ok' }));
 app.get('/health', async (_req, res) => {
   try { await pool.query('SELECT 1'); res.json({ status: 'ok', database: 'connected' }); }
-  catch { res.status(503).json({ status: 'unavailable', database: 'disconnected' }); }
+  catch (error) { res.status(503).json({ status: 'unavailable', database: 'disconnected', reason: String(error.message || error).slice(0, 200) }); }
 });
 app.post('/api/visit', (req, res, next) => { if (!sameOrigin(req)) return res.status(403).json({ error: 'Request origin is invalid.' }); req.session.cookieChoice = 'accept'; track(req, 'visit').then(() => res.json({ tracked: true })).catch(next); });
 app.post('/api/cookie-choice', (req, res, next) => { if (!sameOrigin(req)) return res.status(403).json({ error: 'Request origin is invalid.' }); if (!['accept', 'reject'].includes(req.body?.choice)) return res.status(400).json({ error: 'Invalid cookie preference.' }); req.session.cookieChoice = req.body.choice; req.session.save((error) => error ? next(error) : res.json({ saved: true })); });
@@ -315,7 +318,12 @@ app.use((error, req, res, _next) => {
 
 if (require.main === module) {
   const port = Number(process.env.PORT || 3000);
-  const server = app.listen(port, '0.0.0.0', () => console.log(`Survey server listening on port ${port}`));
+  const server = app.listen(port, '0.0.0.0', () => {
+    console.log(`Survey server listening on port ${port}`);
+    pool.query('SELECT 1')
+      .then(() => console.log('Database connection OK.'))
+      .catch((error) => console.error(`Database connection FAILED: ${error.code || error.message}`));
+  });
   const shutdown = () => server.close(() => pool.end().finally(() => process.exit(0)));
   process.on('SIGTERM', shutdown); process.on('SIGINT', shutdown);
 }

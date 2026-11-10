@@ -15,7 +15,7 @@ services:
     region: singapore
     buildCommand: npm ci
     startCommand: node db/setup.js && node server/app.js
-    healthCheckPath: /health
+    healthCheckPath: /livez
     autoDeploy: true
     envVars:
       - key: NODE_ENV
