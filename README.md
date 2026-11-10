@@ -81,6 +81,17 @@ Consent is unticked by default, optional and recorded with its timestamp; a resp
 
 The privacy copy is an operational template, not legal advice. Before public launch, Quadrafort must review it, choose the actual processor/retention policy, add verified controller/rights-request contact details, and ensure Indian-region hosting and backup locations match policy. Restrict access to `.env`, database credentials, backups and logs.
 
+## Deploy on Render
+
+`render.yaml` is a Render Blueprint that creates one Node web service (`post-quantum-readiness-survey`) and one PostgreSQL database (`quadrafort_survey`).
+
+1. Push this repository to GitHub.
+2. In the Render dashboard choose **New → Blueprint**, connect the repository and apply it. Render generates `SESSION_SECRET` and `IP_HASH_SECRET`, wires `DATABASE_URL` from the new database, and runs `npm ci && npm run setup` as the build step, so the schema is created on every deploy.
+3. `NODE_ENV=production` is set, and `PUBLIC_ORIGIN` falls back to Render's `RENDER_EXTERNAL_URL`, so the `onrender.com` address works without extra configuration. To serve a custom domain, add it in Render and set `PUBLIC_ORIGIN` to that `https://` origin (same-origin checks and email links depend on it).
+4. Create the administrator after the first deploy: open a Render shell and run `npm run create-admin`.
+
+Free Render services spin down after 15 minutes of inactivity (the first request after that takes about a minute), and **free Render Postgres expires 30 days after creation** and is deleted 14 days after that unless upgraded. For a survey that will stay live, upgrade the database to a paid instance or point `DATABASE_URL` at durable PostgreSQL.
+
 ## Deploy on an Ubuntu Linux VPS
 
 1. Provision the VPS, domain and PostgreSQL database in an India region as required by company policy. Restrict PostgreSQL network access to the application host/private network. Set DNS for the selected domain (for example `survey.example.com`).

@@ -18,7 +18,7 @@
     const focus = score.weakestSection || 'Readiness and action';
     const recommendations = suggestions[focus] || suggestions['Readiness and action'];
     const sectionRows = Object.entries(score.sections).map(([name, value]) => `<div class="section-score"><div class="section-score-header"><strong>${text(name)}</strong><span>${value === null ? 'Not scored' : `${value}/100`}</span></div><div class="score-bar" role="meter" aria-label="${text(name)} readiness" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${value ?? 0}"><span data-bar-width="${value ?? 0}"></span></div></div>`).join('');
-    container.innerHTML = `<div class="eyebrow">YOUR PQC READINESS ASSESSMENT · QUADRAFORT'S QUANTUM RISK READINESS SURVEY</div>
+    container.innerHTML = `<div class="eyebrow">YOUR PQC READINESS ASSESSMENT</div>
 <h1>Thank you for sharing your perspective.</h1>
 <p class="question-help">Your assessment is based on the answers you provided and is intended as a starting point for readiness planning.</p>
 <div class="score-panel"><div class="score-number">${score.total}<span>/100</span></div><p class="score-level">${text(score.level)}</p><p>Overall post-quantum readiness score</p></div>

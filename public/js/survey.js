@@ -264,6 +264,34 @@ function setConsentError(message, control) {
   }
 }
 
+async function refreshToken() {
+  try {
+    const response = await fetch('/api/token', { cache: 'no-store' });
+    if (!response.ok) return false;
+    const data = await response.json();
+    token = typeof data.token === 'string' ? data.token : '';
+    return Boolean(token);
+  } catch {
+    return false;
+  }
+}
+
+function submissionPayload(consentGiven) {
+  const params = new URLSearchParams(location.search);
+  const campaign = Object.fromEntries(['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'].map((key) => [key, params.get(key) || '']).filter(([, value]) => value));
+  let storedCampaign = {};
+  try { storedCampaign = JSON.parse(sessionStorage.getItem('qf-survey-campaign') || '{}') || {}; } catch { storedCampaign = {}; }
+  return { answers, contact, consent: consentGiven, submissionToken: token, turnstileToken, ...storedCampaign, ...campaign };
+}
+
+async function sendSubmission(consentGiven) {
+  return fetch('/api/submit', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token },
+    body: JSON.stringify(submissionPayload(consentGiven)),
+  });
+}
+
 async function submitSurvey(event) {
   event.preventDefault();
   if (submitting) return;
@@ -280,38 +308,44 @@ async function submitSurvey(event) {
     return;
   }
 
-  const consentGiven = document.getElementById('consent').checked;
-
-  readContactFromForm();
-  if (contact.wantsReport && !contact.email) return setConsentError('Enter an email address if you would like the results report.', document.getElementById('email'));
-  if (contact.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email)) return setConsentError('Enter a valid email address.', document.getElementById('email'));
-  if (turnstileSiteKey && !turnstileToken) return setConsentError('Complete the bot verification before submitting.');
-
-  save();
   submitting = true;
   submitButton.disabled = true;
   submitButton.textContent = 'Submitting…';
 
   try {
-    const params = new URLSearchParams(location.search);
-    const campaign = Object.fromEntries(['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'].map((key) => [key, params.get(key) || '']).filter(([, value]) => value));
-    const storedCampaign = JSON.parse(sessionStorage.getItem('qf-survey-campaign') || '{}');
-    const response = await fetch('/api/submit', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token },
-      body: JSON.stringify({ answers, contact, consent: consentGiven, submissionToken: token, turnstileToken, ...storedCampaign, ...campaign }),
-    });
-    const result = await response.json();
+    const consentControl = document.getElementById('consent');
+    const consentGiven = Boolean(consentControl && consentControl.checked);
+
+    readContactFromForm();
+    if (contact.wantsReport && !contact.email) return setConsentError('Enter an email address if you would like the results report.', document.getElementById('email'));
+    if (contact.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email)) return setConsentError('Enter a valid email address.', document.getElementById('email'));
+    if (turnstileSiteKey && !turnstileToken) return setConsentError('Complete the bot verification before submitting.');
+
+    save();
+
+    if (!token && !(await refreshToken())) throw new Error('Your survey session has expired. Refresh the page and try again.');
+
+    let response = await sendSubmission(consentGiven);
+    let result = await response.json().catch(() => ({}));
+    if (response.status === 403 && /token/i.test(result.error || '') && (await refreshToken())) {
+      response = await sendSubmission(consentGiven);
+      result = await response.json().catch(() => ({}));
+    }
     if (!response.ok) throw new Error(result.error || 'Your responses could not be submitted.');
+    if (!result.score) throw new Error('Your responses were received but the assessment could not be prepared. Refresh the page to try again.');
+
     sessionStorage.setItem(RESULT_KEY, JSON.stringify(result));
     sessionStorage.setItem(SUBMITTED_KEY, '1');
     localStorage.removeItem(STORAGE_KEY);
     showAssessment(result.score);
   } catch (error) {
-    submitting = false;
-    submitButton.disabled = false;
-    submitButton.textContent = 'Submit and see my assessment';
-    setConsentError(error.message);
+    setConsentError(error.message || 'Your responses could not be submitted. Please try again.');
+  } finally {
+    if (!document.getElementById('assessment') || assessment.hidden) {
+      submitting = false;
+      submitButton.disabled = false;
+      submitButton.textContent = 'Submit and see my assessment';
+    }
   }
 }
 
@@ -427,13 +461,18 @@ async function init() {
   }
 
   try {
-    const [questionResponse, tokenResponse] = await Promise.all([fetch('/api/questions'), fetch('/api/token')]);
-    if (!questionResponse.ok || !tokenResponse.ok) throw new Error('Unable to load the survey.');
+    const questionResponse = await fetch('/api/questions');
+    if (!questionResponse.ok) throw new Error('Unable to load the survey.');
     questions = await questionResponse.json();
     questionById = new Map(questions.map((item) => [item.id, item]));
-    const tokenData = await tokenResponse.json();
-    token = tokenData.token;
-    turnstileSiteKey = tokenData.turnstileSiteKey || '';
+    try {
+      const tokenResponse = await fetch('/api/token', { cache: 'no-store' });
+      if (tokenResponse.ok) {
+        const tokenData = await tokenResponse.json();
+        token = tokenData.token || '';
+        turnstileSiteKey = tokenData.turnstileSiteKey || '';
+      }
+    } catch { /* token is fetched again at submit time */ }
 
     const params = new URLSearchParams(location.search);
     const campaign = Object.fromEntries(['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'].map((key) => [key, params.get(key) || '']).filter(([, value]) => value));

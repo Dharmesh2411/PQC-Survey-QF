@@ -1,0 +1,34 @@
+# Render Blueprint — one-click deploy of the survey.
+# Create a new Blueprint in the Render dashboard and point it at this repository.
+databases:
+  - name: pqc-survey-db
+    databaseName: quadrafort_survey
+    user: pqc_survey
+    plan: free # Free Render Postgres expires 30 days after creation; upgrade to keep data.
+    region: singapore
+
+services:
+  - type: web
+    name: post-quantum-readiness-survey
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: npm ci && npm run setup
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PGSSLMODE
+        value: require
+      - key: DATABASE_URL
+        fromDatabase:
+          name: pqc-survey-db
+          property: connectionString
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: IP_HASH_SECRET
+        generateValue: true
+      - key: NOTIFY_ADMIN
+        value: "false"
