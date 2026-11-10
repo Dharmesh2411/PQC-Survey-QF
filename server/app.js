@@ -22,6 +22,9 @@ const app = express();
 if (!process.env.PUBLIC_ORIGIN && process.env.RENDER_EXTERNAL_URL) process.env.PUBLIC_ORIGIN = process.env.RENDER_EXTERNAL_URL;
 const { poolConfig } = require('../db/pool-config');
 const pool = new Pool(poolConfig({ max: Number(process.env.PG_POOL_MAX || 10), idleTimeoutMillis: 30000, connectionTimeoutMillis: 5000 }));
+// Without a listener, an idle-client error is an unhandled 'error' event that
+// takes the whole process down.
+pool.on('error', (error) => console.error(`Idle database client error: ${error.code || error.message}`));
 const production = process.env.NODE_ENV === 'production';
 const sessionSecret = process.env.SESSION_SECRET;
 const ipSecret = process.env.IP_HASH_SECRET;
