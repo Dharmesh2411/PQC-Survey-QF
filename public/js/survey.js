@@ -351,7 +351,7 @@ async function submitSurvey(event) {
 
 /* ---------- assessment ---------- */
 
-function showAssessment(score) {
+function showAssessment(score, restored = false) {
   intro.hidden = true;
   progressDock.hidden = true;
   form.hidden = true;
@@ -360,6 +360,13 @@ function showAssessment(score) {
   assessment.hidden = false;
   if (window.QFAssessment) {
     window.QFAssessment.render(assessment, score);
+    if (restored) {
+      const note = document.createElement('p');
+      note.className = 'question-help';
+      note.textContent = 'This is the assessment from your most recent submission in this browser tab. Start a new survey to answer again.';
+      const heading = assessment.querySelector('h1');
+      if (heading) heading.insertAdjacentElement('afterend', note);
+    }
     const row = assessment.querySelector('.button-row');
     if (row) {
       const retake = document.createElement('button');
@@ -454,7 +461,7 @@ async function init() {
   if (sessionStorage.getItem(SUBMITTED_KEY) === '1' && storedResult) {
     try {
       const parsed = JSON.parse(storedResult);
-      if (parsed && parsed.score) { showAssessment(parsed.score); return; }
+      if (parsed && parsed.score) { showAssessment(parsed.score, true); return; }
     } catch { /* fall through and load a fresh survey */ }
     sessionStorage.removeItem(SUBMITTED_KEY);
     sessionStorage.removeItem(RESULT_KEY);
