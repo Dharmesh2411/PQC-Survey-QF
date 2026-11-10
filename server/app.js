@@ -20,7 +20,7 @@ const { sendCompletionEmail } = require('./email');
 const app = express();
 // Render exposes the service's public URL; use it when PUBLIC_ORIGIN is not set explicitly.
 if (!process.env.PUBLIC_ORIGIN && process.env.RENDER_EXTERNAL_URL) process.env.PUBLIC_ORIGIN = process.env.RENDER_EXTERNAL_URL;
-const { poolConfig } = require('../db/pool-config');
+const { poolConfig, describeTarget } = require('../db/pool-config');
 const pool = new Pool(poolConfig({ max: Number(process.env.PG_POOL_MAX || 10), idleTimeoutMillis: 30000, connectionTimeoutMillis: 5000 }));
 // Without a listener, an idle-client error is an unhandled 'error' event that
 // takes the whole process down.
@@ -324,6 +324,7 @@ if (require.main === module) {
   const port = Number(process.env.PORT || 3000);
   const server = app.listen(port, '0.0.0.0', () => {
     console.log(`Survey server listening on port ${port}`);
+    console.log(`Database target ${describeTarget()}`);
     pool.query('SELECT 1')
       .then(() => console.log('Database connection OK.'))
       .catch((error) => console.error(`Database connection FAILED: ${error.code || error.message}`));

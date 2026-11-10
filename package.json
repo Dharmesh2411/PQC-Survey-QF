@@ -6,7 +6,7 @@
   "main": "server/app.js",
   "type": "commonjs",
   "scripts": {
-    "start": "node server/app.js",
+    "start": "node db/setup.js && node server/app.js",
     "dev": "node --watch server/app.js",
     "setup": "node db/setup.js",
     "create-admin": "node scripts/create-admin.js",

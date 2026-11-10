@@ -3,13 +3,14 @@ require('dotenv').config();
 const fs = require('node:fs');
 const path = require('node:path');
 const { Pool } = require('pg');
-const { poolConfig } = require('./pool-config');
+const { poolConfig, describeTarget } = require('./pool-config');
 
 const ATTEMPTS = 4;
 const RETRY_DELAY_MS = 3000;
 
 (async () => {
   const schema = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
+  console.log(`Applying schema to ${describeTarget()}`);
   for (let attempt = 1; attempt <= ATTEMPTS; attempt += 1) {
     const pool = new Pool(poolConfig());
     try {

@@ -21,8 +21,19 @@ function poolConfig(overrides = {}) {
   return {
     connectionString: url.toString(),
     ssl: TLS_MODES.test(mode) ? { rejectUnauthorized: false } : false,
+    // Without a connect timeout a stuck handshake blocks startup, and on Render
+    // that means no port ever opens and the deploy dies on a port scan.
+    connectionTimeoutMillis: 10000,
     ...overrides,
   };
 }
 
-module.exports = { poolConfig };
+// Safe to log: host and port only, never credentials.
+function describeTarget() {
+  try {
+    const url = new URL(process.env.DATABASE_URL || '');
+    return `${url.hostname}:${url.port || 5432}${url.searchParams.get('sslmode') ? ' (tls requested)' : ''}`;
+  } catch { return 'unparseable DATABASE_URL'; }
+}
+
+module.exports = { poolConfig, describeTarget };
