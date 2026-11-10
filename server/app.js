@@ -20,7 +20,8 @@ const { sendCompletionEmail } = require('./email');
 const app = express();
 // Render exposes the service's public URL; use it when PUBLIC_ORIGIN is not set explicitly.
 if (!process.env.PUBLIC_ORIGIN && process.env.RENDER_EXTERNAL_URL) process.env.PUBLIC_ORIGIN = process.env.RENDER_EXTERNAL_URL;
-const pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: process.env.PGSSLMODE === 'require' ? { rejectUnauthorized: true } : undefined, max: Number(process.env.PG_POOL_MAX || 10), idleTimeoutMillis: 30000, connectionTimeoutMillis: 5000 });
+const { poolConfig } = require('../db/pool-config');
+const pool = new Pool(poolConfig({ max: Number(process.env.PG_POOL_MAX || 10), idleTimeoutMillis: 30000, connectionTimeoutMillis: 5000 }));
 const production = process.env.NODE_ENV === 'production';
 const sessionSecret = process.env.SESSION_SECRET;
 const ipSecret = process.env.IP_HASH_SECRET;

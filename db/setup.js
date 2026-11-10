@@ -3,10 +3,10 @@ require('dotenv').config();
 const fs = require('node:fs');
 const path = require('node:path');
 const { Pool } = require('pg');
+const { poolConfig } = require('./pool-config');
 
 (async () => {
-  if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is required. Copy .env.example to .env and configure your PostgreSQL database.');
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: process.env.PGSSLMODE === 'require' ? { rejectUnauthorized: true } : undefined });
+  const pool = new Pool(poolConfig());
   try {
     const schema = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
     await pool.query(schema);

@@ -49,7 +49,7 @@ The server deliberately refuses to start without strong session and IP-hashing s
 
 See `.env.example` for every supported value:
 
-- `DATABASE_URL` — PostgreSQL connection URL. Set `PGSSLMODE=require` when the database requires TLS.
+- `DATABASE_URL` — PostgreSQL connection URL. TLS is enabled automatically when the URL (or `PGSSLMODE`) asks for it; managed providers use provider-signed certificates, so the connection stays encrypted without validating the chain. Set `PGSSLMODE=require` only when the database refuses plain connections.
 - `PG_POOL_MAX` — maximum pooled PostgreSQL connections (default 10).
 - `PUBLIC_ORIGIN` — canonical origin, e.g. `https://survey.example.com`; use loopback origin in local development. Mutating requests with a mismatched `Origin` are rejected.
 - `SESSION_SECRET`, `IP_HASH_SECRET` — independent random secrets; keep them only in the server's environment file/secret manager.
@@ -88,7 +88,7 @@ The privacy copy is an operational template, not legal advice. Before public lau
 1. Push this repository to GitHub.
 2. In the Render dashboard choose **New → Blueprint**, connect the repository and apply it. Render generates `SESSION_SECRET` and `IP_HASH_SECRET`, wires `DATABASE_URL` from the new database, builds with `npm ci`, and runs `node db/setup.js && node server/app.js` on start, so the schema is applied on every boot.
 
-   Do not set `PGSSLMODE` for Render's internal `DATABASE_URL`: the private connection is not TLS, and forcing SSL makes both `db/setup.js` and the server fail with `The server does not support SSL connections`. Set it only when the database is reached over the public internet, where TLS is required.
+   `DATABASE_URL` may carry `sslmode=require`, which Render's default connection strings do. `db/pool-config.js` handles that: it keeps the connection encrypted but does not validate Render's provider-signed certificate, which Node does not trust and would otherwise fail with `self-signed certificate`. Do not force `PGSSLMODE=require` against an internal database that does not offer TLS, or the connection fails with `The server does not support SSL connections`.
 3. `NODE_ENV=production` is set, and `PUBLIC_ORIGIN` falls back to Render's `RENDER_EXTERNAL_URL`, so the `onrender.com` address works without extra configuration. To serve a custom domain, add it in Render and set `PUBLIC_ORIGIN` to that `https://` origin (same-origin checks and email links depend on it).
 4. Create the administrator after the first deploy: open a Render shell and run `npm run create-admin`.
 
