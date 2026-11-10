@@ -77,7 +77,7 @@ The dashboard includes visit/start/completion counts, completion rate, average s
 
 ## Privacy and operations
 
-Consent is explicit, required, unticked by default and timestamped. Contact details are optional; a results email requires an email address. Network addresses are keyed-hashed with `IP_HASH_SECRET`; raw addresses are not stored. User-agent and responses are stored for survey operations. Never log response or contact values. Application errors are written without PII to `logs/error.log` by default. Access/deletion requests can be submitted through the contact information on `/privacy` and processed from the admin dashboard.
+Consent is unticked by default, optional and recorded with its timestamp; a response can be submitted with or without it. Contact details are optional; a results email requires an email address. Network addresses are keyed-hashed with `IP_HASH_SECRET`; raw addresses are not stored. User-agent and responses are stored for survey operations. Never log response or contact values. Application errors are written without PII to `logs/error.log` by default. Access/deletion requests can be submitted through the contact information on `/privacy` and processed from the admin dashboard.
 
 The privacy copy is an operational template, not legal advice. Before public launch, Quadrafort must review it, choose the actual processor/retention policy, add verified controller/rights-request contact details, and ensure Indian-region hosting and backup locations match policy. Restrict access to `.env`, database credentials, backups and logs.
 
